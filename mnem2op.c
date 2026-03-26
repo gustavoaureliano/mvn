@@ -1,24 +1,22 @@
 #include <ctype.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define NUM_INST 16
+#define NUM_INST 18
+#define SIZE_OPERANDO 18
 
 typedef struct {
-	char address[100];
-	int operando[100];
+	char operando[SIZE_OPERANDO];
+	uint16_t address;
+	uint8_t opcode;
 } mvn;
 
 typedef struct {
 	char mnemonico[3];
 	char opcode[2];
 } mnemonico;
-
-typedef struct {
-	char symbol[100];
-	char address[100];
-} symbol;
 
 const mnemonico mnemtable[NUM_INST] = {
 	{"JP", "0"},
@@ -36,12 +34,9 @@ const mnemonico mnemtable[NUM_INST] = {
 	{"HM", "C"},
 	{"GD", "D"},
 	{"PD", "E"},
-	{"SO", "F"}
-};
-
-const char pseudo[2][2] = {
-	"K",
-	"@"
+	{"SO", "F"},
+	{"K", ""},
+	{"@", ""}
 };
 
 int is_blank_line(const char *line) {
@@ -56,11 +51,10 @@ int is_blank_line(const char *line) {
 
 int get_inst_index(const char* inst) {
 	printf("get index:\n");
-	for (int i = 0; i < sizeof(mnemtable); i++) {
-		printf("%d\n", i);
-		// if (strcmp(mnemtable[i].mnemonico, inst) == 0) {
-		// 	return i;
-		// }
+	for (int i = 0; i < NUM_INST; i++) {
+		if (strcmp(mnemtable[i].mnemonico, inst) == 0) {
+			return i;
+		}
 	}
 	return -1;
 }
@@ -73,12 +67,29 @@ int main(int argc, char *argv[]) {
 
   char* token;
   int inst_counter = 0;
+  mvn program[1000];
   // primeiro passo
   while ((nread = getline(&line, &size, fp)) != -1 && inst_counter < 1000) {
 	  token = strtok(line, " \t\n");
-	  if (token[0] == ';' || is_blank_line(token)) continue;
+	  if (is_blank_line(token)) continue;
+	  if (token[0] == ';') continue;
 	  if (strcmp(token, "\n") == 0) continue;
-	  printf("token: %s; index: %d\n", token, get_inst_index(token));
+	  int inst_index = get_inst_index(token);
+	  printf("token: %s; index: %d\n", token, inst_index);
+	  if (inst_index > 0) {
+		  program[inst_counter].address = inst_counter;
+		  program[inst_counter].opcode = inst_index;
+		  token = strtok(NULL, " \t\r\n");
+		  printf("new token: %s\n", token);
+		  if (inst_index < 16) {
+			  snprintf(program[inst_counter].operando, SIZE_OPERANDO, "%s", token);
+			  inst_counter += 2;
+			  continue;
+		  }
+		  if (token[0] == '/') {
+			  inst_counter = strtoul(&token[1], NULL, 16);
+		  }
+	  }
   }
   // segundo passo
   // back to the start of the file
@@ -94,6 +105,9 @@ int main(int argc, char *argv[]) {
   //  // printf("%d: {%s, %s, %s, %s}", 2*i, mvn[i][0], mvn[i][1], mvn[i][2], mvn[i][3]);
   // }
   //
+  for (int i = 0; i < inst_counter; i++) {
+	  printf("%d", program[i].opcode);
+  }
   fclose(fp);
   free(line);
   return 0;

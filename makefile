@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS= -Wall -Werror -pedantic -g -fsanitize=address,undefined
+CFLAGS= -Wall -Werror -pedantic -g3 -fsanitize=address,undefined
 
 all: mnem2op
 
