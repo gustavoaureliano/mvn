@@ -117,10 +117,10 @@ int main(int argc, char *argv[]) {
 				symbols[symbol_counter].address = curr_address; // shouldn't be needed
 				symbol_counter++;
 			}
+			symbol = token;
+			token = strtok(NULL, " \t\r\n");
 		}
 		switch (inst_index) {
-			case -1:
-				break;
 			case 16:
 				switch (token[0]) {
 					case '/':
@@ -130,6 +130,17 @@ int main(int argc, char *argv[]) {
 					case '=':
 						printf("decimal: %s\n", token);
 						curr_address = strtoul(&token[1], NULL, 10);
+						break;
+					default:
+						// label
+						symbol_index = get_symbol_index(token, symbols, symbol_counter);
+						if (symbol_index >= 0) {
+							snprintf(program[inst_counter].operando, OPERANDO_SIZE, "%03X", symbols[symbol_index].address);
+							break;
+						}
+						snprintf(program[inst_counter].operando, OPERANDO_SIZE, "%s", token);
+						snprintf(symbols[symbol_counter].rotulo, OPERANDO_SIZE, "%s", token);
+						symbol_counter++;
 						break;
 				}
 				break;
@@ -146,8 +157,19 @@ int main(int argc, char *argv[]) {
 						printf("decimal: %s\n", token);
 						operando_addr = strtoul(&token[1], NULL, 10);
 						break;
+					default:
+						// label
+						symbol_index = get_symbol_index(token, symbols, symbol_counter);
+						if (symbol_index >= 0) {
+							snprintf(program[inst_counter].operando, OPERANDO_SIZE, "%s", token);
+							break;
+						}
+						snprintf(program[inst_counter].operando, OPERANDO_SIZE, "%s", token);
+						snprintf(symbols[symbol_counter].rotulo, OPERANDO_SIZE, "%s", token);
+						symbol_counter++;
+						break;
 				}
-				snprintf(program[curr_address].operando, OPERANDO_SIZE, "%04X", operando_addr);
+				snprintf(program[inst_counter].operando, OPERANDO_SIZE, "%04X", operando_addr);
 				curr_address += 2;
 				inst_counter += 1;
 				break;
