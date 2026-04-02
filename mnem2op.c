@@ -7,7 +7,7 @@
 #define NUM_INST 18
 #define OPERANDO_SIZE 64
 #define PROGRAM_SIZE 1024
-#define MAX_ADDRESS 1000
+#define MAX_ADDRESS (PROGRAM_SIZE)
 #define AT_PSEUDO_IDX 16
 #define K_PSEUDO_IDX 17
 
