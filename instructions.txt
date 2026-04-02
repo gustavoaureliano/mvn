@@ -1,0 +1,126 @@
+MNEM2OP e OP2MNEM
+
+O objetivo deste projeto é que você desenvolva dois programas para montar e desmontar o assembly MVN. Enquanto o assembler gera código de máquina para a execução das instruções desejadas de um programa, o disassembler traduz o código de máquina para assembly, funcionando como uma ferramenta de engenharia reversa. Isso é útil para, por exemplo, recuperar o código-fonte de um programa a partir do seu código de máquina.
+
+Algumas observações gerais sobre os programas que serão construídos:
+
+    Os programas devem ser feitos utilizando a linguagem C.
+
+    Use os mesmos opcodes e mnemônicos definidos na MVN. A tabela de mnemônicos está no final do texto. 
+
+    Os mnemônicos devem conter somente caracteres maiúsculos.
+
+    A sintaxe dos programas escritos em código de máquina (.mvn) e assembly (.asm) deve ser a mesma dos programas que vocês vêm desenvolvendo até agora.
+
+    Assuma que os programas de entrada não possuem comentários.
+
+    Consulte a tabela ASCII
+
+    Teste os programas localmente para garantir que está tudo correto.
+
+    Assuma que os programas de entrada, que serão convertidos, estão corretos.
+
+    Não é necessário tratar erros de sintaxe e de formatação do arquivo de entrada.
+
+
+
+Programa 1. Assembler (5,0 pontos)
+
+Construa um programa montador para a máquina MVN, chamado mnem2op.c, que recebe um arquivo .asm, monta o código de máquina correspondente e imprime o código mvn gerado em tela.
+
+Siga as mesmas convenções da linguagem ASM:
+
+    @ para endereçamento absoluto
+
+    K para atribuir valores
+
+    / e = para valores hexadecimais e decimais, respectivamente
+
+    Definição de rótulos à esquerda
+
+    Não é necessário implementar endereçamento relativo (&)
+
+
+O programa deve ser chamado da seguinte forma:
+
+$ mnem2op arquivo.asm
+
+Imprimindo em tela o código mvn, por exemplo:
+
+0000 8102
+
+0002 4104
+
+…
+
+000A C000
+
+Programa 2. Disassembler (5,0 pontos)
+
+Construa um programa desmontador, chamado op2mnem.c, que recebe um arquivo .mvn e gera um código asm válido correspondente impresso em tela. Adote as seguintes convenções:
+
+    Rótulos de variáveis/constantes: começam com ROT + 2 dígitos decimais, em ordem crescente, por exemplo, ROT00, ROT01, ROT02, …
+
+    Rótulos de saltos: começam com JUMP + 2 dígitos decimais, em ordem crescente, por exemplo, JUMP00, JUMP01, JUMP02, …
+
+    Rótulos de subrotinas: começam com SUB  + 2 dígitos decimais, em ordem crescente, por exemplo, SUB00, SUB01, SUB02, …
+
+    Observe que é possível gerar um asm válido sem rótulos, o que também será aceito desde que o mvn gerado esteja correto.
+
+    Assuma que as instruções de operação do programa ficam entre os endereços 0x0000 e 0x02FF. Os endereços dos rótulos de valores devem ficar entre 0x0300 e 0x03FF.
+
+    Mantenha a indentação do asm gerado, alinhando as operações que estão dentro de um mesmo nível, como no exemplo abaixo:
+
+
+LV VAR00
+
+JUMP00    LD VAR01
+
+                  SB VAR02
+
+                  JZ JUMP01
+
+                  MM VAR01
+
+                  JP JUMP00
+
+JUMP01    HM /0000
+
+@ /300
+
+VAR00 K /0000
+
+VAR01 K /0005
+
+VAR02 K /0001
+
+
+O programa deve ser chamado da seguinte forma:
+
+$ op2mnem arquivo.mvn
+
+Imprimindo em tela o código asm, como no exemplo visto acima.
+
+Entrega:
+
+    A data limite de entrega do EP será dia 12/04/2026 às 23:59
+
+    Entregue os programas do EP pelo eDisciplinas.
+
+    As notas serão divulgadas posteriormente ao prazo de entrega do EP. Portanto, não será possível avaliá-los automaticamente na entrega.
+
+    Para obter nota máxima nos programas, eles devem gerar o código esperado. Use o mvn-cli e o mvnMonitor para testá-los.
+
+    Testes: os programas serão avaliados por meio de testes que serão executados em programas asm e mvn contendo: uma sequência de instruções sem desvios (2,0 pontos), uma sequência de instruções com desvios (1,5 ponto) e uma sequência de instruções com desvios e uso de entrada e saída (1,5 ponto).
+
+    Use os três programas exemplo fornecidos como referência para testar os programas que você vai desenvolver:
+
+        ep-exemplo-1: soma dois numeros e armazena o resultado em um endereço
+
+        ep-exemplo-2: calcula um valor elevado a outro e armazena o resultado em um endereço
+
+        ep-exemplo-3: verifica se o número digitado, de dois decimais, é divisível por 3, se for retorna 01 senão retorna 00
+
+    Programas entregues que não compilarem receberão nota zero.
+
+    Casos de plágio resultarão em nota zero para todos os envolvidos.
