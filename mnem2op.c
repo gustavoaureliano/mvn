@@ -32,7 +32,8 @@ typedef enum {
 	OK = 0,
 	ERR_USAGE = 1,
 	ERR_IO = 2,
-	ERR_PARSE = 3
+	ERR_PARSE = 3,
+	ERR_UNRESOLVED = 4
 } ExitCode;
 
 const Mnemonico mnemtable[NUM_INST] = {
@@ -148,6 +149,28 @@ static int resolve_or_store_operand(const char *token, Symbol symbols[], uint16_
 	}
 
 	return 0;
+}
+
+static int emit_program_line(const MVN *entry, Symbol symbols[], uint16_t symbol_counter) {
+	printf("%04X ", entry->address);
+	if (entry->opcode < 0) {
+		printf("%s\n", entry->operando);
+		return OK;
+	}
+
+	int symbol_index = get_symbol_index(entry->operando, symbols, symbol_counter);
+	if (symbol_index >= 0) {
+		if (symbols[symbol_index].is_defined == 0) {
+			fprintf(stderr, "Unresolved label: %s\n", entry->operando);
+			return ERR_UNRESOLVED;
+		}
+
+		printf("%01X%03X\n", entry->opcode, symbols[symbol_index].address);
+		return OK;
+	}
+
+	printf("%01X%s\n", entry->opcode, entry->operando);
+	return OK;
 }
 
 int main(int argc, char *argv[]) {
@@ -289,19 +312,12 @@ int main(int argc, char *argv[]) {
 	}
 
 	for (uint16_t i = 0; i < inst_counter; i++) {
-		printf("%04X ", program[i].address);
-		if (program[i].opcode < 0) {
-			printf("%s\n", program[i].operando);
-			continue;
+		int rc = emit_program_line(&program[i], symbols, symbol_counter);
+		if (rc != OK) {
+			fclose(fp);
+			free(line);
+			return rc;
 		}
-
-		int symbol_index = get_symbol_index(program[i].operando, symbols, symbol_counter);
-		if (symbol_index < 0) {
-			printf("%01X%s\n", program[i].opcode, program[i].operando);
-			continue;
-		}
-
-		printf("%01X%03X\n", program[i].opcode, symbols[symbol_index].address);
 	}
 
 	fclose(fp);
