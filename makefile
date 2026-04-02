@@ -1,6 +1,8 @@
 CC=gcc
 CFLAGS= -Wall -Werror -pedantic -g3 -fsanitize=address,undefined
 
+.PHONY: all clean test test-asm test-roundtrip
+
 all: mnem2op op2mnem
 
 mnem2op: mnem2op.c
@@ -8,6 +10,14 @@ mnem2op: mnem2op.c
 
 op2mnem: op2mnem.c
 	$(CC) $(CFLAGS) $^ -o $@
+
+test: all test-asm test-roundtrip
+
+test-asm: all
+	./scripts/test_asm.sh
+
+test-roundtrip: all
+	./scripts/test_roundtrip.sh
 
 clean:
 	rm -f mnem2op op2mnem
