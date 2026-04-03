@@ -6,8 +6,13 @@ set -eu
 # 1) remover comentarios ';' dos .asm de teste
 # 2) comparar arquivos ignorando somente newline final
 
+total=0
+passed=0
+
 for f in arquivos-teste/*.asm; do
 	base="${f%.asm}"
+	name="$(basename "$base")"
+	total=$((total + 1))
 
 	python3 - "$f" /tmp/mvn-test.asm <<'PY'
 import sys
@@ -35,8 +40,14 @@ right = Path(sys.argv[2]).read_bytes().rstrip(b"\n")
 sys.exit(0 if left == right else 1)
 PY
 		then
+			echo "FAIL: ${name}" >&2
 			cat /tmp/mvn.diff
 			exit 1
 		fi
 	fi
+
+	echo "PASS: ${name}"
+	passed=$((passed + 1))
 done
+
+echo "PASS: ${passed}/${total} (test_asm)"

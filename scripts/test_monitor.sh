@@ -12,8 +12,12 @@ if ! command -v mvn-cli >/dev/null 2>&1; then
 	exit 1
 fi
 
+total=0
+passed=0
+
 for f in arquivos-teste/*.asm; do
 	base="$(basename "${f%.asm}")"
+	total=$((total + 1))
 
 	python3 - "$f" "/tmp/${base}.clean.asm" <<'PY'
 import sys
@@ -54,4 +58,9 @@ EOF
 		cat "/tmp/${base}.monitor.diff"
 		exit 1
 	fi
+
+	echo "PASS: ${base}"
+	passed=$((passed + 1))
 done
+
+echo "PASS: ${passed}/${total} (test_monitor)"
