@@ -1,7 +1,7 @@
 CC=gcc
 CFLAGS= -Wall -Werror -pedantic -g3 -fsanitize=address,undefined
 
-.PHONY: all clean test test-asm test-roundtrip test-ref test-monitor
+.PHONY: all clean test test-asm test-raw test-roundtrip test-ref test-monitor
 
 all: mnem2op op2mnem
 
@@ -15,6 +15,9 @@ test: all test-asm test-roundtrip
 
 test-asm: all
 	./scripts/test_asm.sh
+
+test-raw: all
+	./scripts/test_asm_raw.sh
 
 test-roundtrip: all
 	./scripts/test_roundtrip.sh

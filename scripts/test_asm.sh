@@ -6,6 +6,8 @@ set -eu
 # 1) remover comentarios ';' dos .asm de teste
 # 2) comparar arquivos ignorando somente newline final
 
+echo "INFO: stripping ';' comments from ASM fixtures before assembly"
+
 total=0
 passed=0
 

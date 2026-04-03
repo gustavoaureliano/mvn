@@ -98,6 +98,14 @@ O alvo `test` roda:
 1. `test-asm`: compara a saída do `mnem2op` com os arquivos `.mvn` esperados.
 2. `test-roundtrip`: valida `.mvn -> op2mnem -> mnem2op` contra o `.mvn` original.
 
+Detalhe importante do `test-asm`: os arquivos `.asm` são pré-processados para remover comentários `;...` antes da montagem.
+
+Para validar os arquivos brutos sem pré-processamento, use:
+
+```bash
+make test-raw
+```
+
 Diferenças apenas de newline final são tratadas como equivalentes.
 
 Testes opcionais com ferramentas de referência da disciplina:
