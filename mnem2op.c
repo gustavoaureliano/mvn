@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -15,7 +16,7 @@ typedef struct {
 	char operando[OPERANDO_SIZE];
 	uint16_t address;
 	int8_t opcode;
-	uint8_t operand_is_symbol;
+	bool operand_is_symbol;
 } MVN;
 
 typedef struct {
@@ -25,7 +26,7 @@ typedef struct {
 
 typedef struct {
 	uint16_t address;
-	uint8_t is_defined;
+	bool is_defined;
 	char rotulo[OPERANDO_SIZE];
 } Symbol;
 
@@ -112,14 +113,14 @@ static int find_or_add_symbol(const char *label, Symbol symbols[], uint16_t *sym
 
 	snprintf(symbols[*symbol_counter].rotulo, OPERANDO_SIZE, "%s", label);
 	symbols[*symbol_counter].address = 0;
-	symbols[*symbol_counter].is_defined = 0;
+	symbols[*symbol_counter].is_defined = false;
 	(*symbol_counter)++;
 
 	return *symbol_counter - 1;
 }
 
 static int resolve_or_store_operand(const char *token, Symbol symbols[], uint16_t *symbol_counter,
-		char *dst, size_t dst_size, int width, uint8_t *is_symbol_operand) {
+		char *dst, size_t dst_size, int width, bool *is_symbol_operand) {
 	uint16_t operand_value = 0;
 	int parsed = parse_number_token(token, &operand_value);
 
@@ -127,7 +128,7 @@ static int resolve_or_store_operand(const char *token, Symbol symbols[], uint16_
 		return -1;
 	}
 	if (parsed > 0) {
-		*is_symbol_operand = 0;
+		*is_symbol_operand = false;
 		if (width == 4) {
 			snprintf(dst, dst_size, "%04X", operand_value);
 		} else {
@@ -140,15 +141,15 @@ static int resolve_or_store_operand(const char *token, Symbol symbols[], uint16_
 	if (symbol_index < 0) {
 		return -1;
 	}
-	if (symbols[symbol_index].is_defined > 0) {
-		*is_symbol_operand = 0;
+	if (symbols[symbol_index].is_defined) {
+		*is_symbol_operand = false;
 		if (width == 4) {
 			snprintf(dst, dst_size, "%04X", symbols[symbol_index].address);
 		} else {
 			snprintf(dst, dst_size, "%03X", symbols[symbol_index].address);
 		}
 	} else {
-		*is_symbol_operand = 1;
+		*is_symbol_operand = true;
 		snprintf(dst, dst_size, "%s", token);
 	}
 
@@ -162,14 +163,14 @@ static int emit_program_line(const MVN *entry, Symbol symbols[], uint16_t symbol
 		return OK;
 	}
 
-	if (entry->operand_is_symbol == 0) {
+	if (!entry->operand_is_symbol) {
 		printf("%01X%s\n", entry->opcode, entry->operando);
 		return OK;
 	}
 
 	int symbol_index = get_symbol_index(entry->operando, symbols, symbol_counter);
 	if (symbol_index >= 0) {
-		if (symbols[symbol_index].is_defined == 0) {
+		if (!symbols[symbol_index].is_defined) {
 			fprintf(stderr, "Unresolved label: %s\n", entry->operando);
 			return ERR_UNRESOLVED;
 		}
@@ -225,7 +226,7 @@ int main(int argc, char *argv[]) {
 			}
 
 			symbols[symbol_index].address = curr_address;
-			symbols[symbol_index].is_defined = 1;
+			symbols[symbol_index].is_defined = true;
 
 			token = strtok(NULL, " \t\r\n");
 			if (token == NULL) {
@@ -274,7 +275,7 @@ int main(int argc, char *argv[]) {
 					free(line);
 					return ERR_PARSE;
 				}
-				if (symbols[symbol_index].is_defined > 0) {
+				if (symbols[symbol_index].is_defined) {
 					curr_address = symbols[symbol_index].address;
 				}
 				break;
@@ -288,7 +289,7 @@ int main(int argc, char *argv[]) {
 				}
 				program[inst_counter].address = curr_address;
 				program[inst_counter].opcode = -1;
-				program[inst_counter].operand_is_symbol = 0;
+				program[inst_counter].operand_is_symbol = false;
 				if (resolve_or_store_operand(token, symbols, &symbol_counter,
 							program[inst_counter].operando, OPERANDO_SIZE, 4,
 							&program[inst_counter].operand_is_symbol) != 0) {
@@ -309,7 +310,7 @@ int main(int argc, char *argv[]) {
 				}
 				program[inst_counter].address = curr_address;
 				program[inst_counter].opcode = inst_index;
-				program[inst_counter].operand_is_symbol = 0;
+				program[inst_counter].operand_is_symbol = false;
 				if (resolve_or_store_operand(token, symbols, &symbol_counter,
 							program[inst_counter].operando, OPERANDO_SIZE, 3,
 							&program[inst_counter].operand_is_symbol) != 0) {
